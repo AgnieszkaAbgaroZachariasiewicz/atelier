@@ -21,9 +21,10 @@ class Book < ApplicationRecord
     return unless can_take?(user)
 
     if available_reservation.present?
+      send_mailers(available_reservation)
       available_reservation.update_attributes(status: 'TAKEN')
     else
-      reservations.create(user: user, status: 'TAKEN')
+      send_mailers(reservations.create(user: user, status: 'TAKEN'))
     end
   end
 
@@ -76,5 +77,11 @@ class Book < ApplicationRecord
 
   def next_in_queue
     reservations.where(status: 'RESERVED').order(created_at: :asc).first
+  end
+
+  def send_mailers(res)
+    remind_date = res.expires_at - 1.day
+    ::BookNotifierMailer.delay(run_at: remind_date).book_return_remind(res.book)
+    ::BookNotifierMailer.delay(run_at: remind_date).book_reserved_return(res.book)
   end
 end
