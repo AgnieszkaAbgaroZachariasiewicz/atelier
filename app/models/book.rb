@@ -21,9 +21,10 @@ class Book < ApplicationRecord
     return unless can_take?(user)
 
     if available_reservation.present?
+      perform_expiration_worker(available_reservation)
       available_reservation.update_attributes(status: 'TAKEN')
     else
-      reservations.create(user: user, status: 'TAKEN')
+      perform_expiration_worker(reservations.create(user: user, status: 'TAKEN'))
     end
   end
 
@@ -76,5 +77,9 @@ class Book < ApplicationRecord
 
   def next_in_queue
     reservations.where(status: 'RESERVED').order(created_at: :asc).first
+  end
+
+  def perform_expiration_worker(res)
+    ::BookReservationExpireWorker.perform_at(res.expires_at-1.day, res.book_id)
   end
 end
