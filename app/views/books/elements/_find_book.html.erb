@@ -1,0 +1,10 @@
+<%= form_tag books_path, method: :post do %>
+  <%= text_field_tag :isbn, '', placeholder: 'ISBN', class: 'x-autocomplete' %>
+  <%= text_field_tag :title, '', placeholder: 'title', class: 'x-autocomplete' %>
+  <%= text_field_tag :category_name, '', placeholder: 'category', class: 'x-autocomplete' %>
+  <%= button_tag type: 'submit', class: 'btn' do %>
+    <i class="fa fa-find"></i>
+    lookup
+  <% end %>
+<% end %>
+<br>
